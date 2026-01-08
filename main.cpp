@@ -8,11 +8,15 @@ int main() {
 
     game.render("move_00.png"); // Starting position
 
-    for (int i = 0; i < study.size(); i++) {
-        if (game.move(study[i])) {
-            game.render("move_" + std::to_string(i + 1) + ".png");
-        }
+for (int i = 0; i < study.size(); i++) {
+    if (game.move(study[i])) {
+        game.render("move_" + std::to_string(i + 1) + ".png");
+        std::cout << "Move " << study[i] << " successful.\n";
+    } else {
+        std::cerr << "Invalid move detected: " << study[i] << " - Stopping.\n";
+        break; 
     }
+}
 
     std::cout << "Images generated. Creating GIF..." << std::endl;
     

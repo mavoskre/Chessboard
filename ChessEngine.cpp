@@ -5,6 +5,7 @@
 #include "stb_image.h"
 #include <iostream>
 #include <map>
+#include <cmath>
 
 std::map<char, int> pieceMap = {
     {'Q', 0}, {'K', 1}, {'R', 2}, {'N', 3}, {'B', 4}, {'P', 5}, 
@@ -16,12 +17,76 @@ ChessBoard::ChessBoard() {
     for (int i = 0; i < 64; i++) grid[i / 8][i % 8] = start[i];
 }
 
+bool ChessBoard::isPathClear(int sr, int sc, int er, int ec) {
+    int dr = (er - sr == 0) ? 0 : (er - sr > 0 ? 1 : -1);
+    int dc = (ec - sc == 0) ? 0 : (ec - sc > 0 ? 1 : -1);
+    
+    int currR = sr + dr;
+    int currC = sc + dc;
+    
+    while (currR != er || currC != ec) {
+        if (grid[currR][currC] != '.') return false;
+        currR += dr;
+        currC += dc;
+    }
+    return true;
+}
+
 bool ChessBoard::move(std::string m) {
     if (m.length() < 4) return false;
     int sc = m[0] - 'a', sr = 8 - (m[1] - '0');
     int ec = m[2] - 'a', er = 8 - (m[3] - '0');
     
     if (sr < 0 || sr > 7 || sc < 0 || sc > 7 || er < 0 || er > 7 || ec < 0 || ec > 7) return false;
+
+    char piece = grid[sr][sc];
+    char target = grid[er][ec];
+
+    if (piece == '.') return false;
+
+    if (target != '.') {
+        bool isPieceWhite = (piece < 'a');
+        bool isTargetWhite = (target < 'a');
+        if (isPieceWhite == isTargetWhite) return false;
+    }
+
+    int rowDiff = std::abs(er - sr);
+    int colDiff = std::abs(ec - sc);
+
+switch (std::tolower(piece)) {
+        case 'p': {
+            int direction = (piece == 'P') ? -1 : 1;
+            int startRow = (piece == 'P') ? 6 : 1;
+
+            if (sc == ec && target == '.' && er - sr == direction) break;
+        
+            if (sc == ec && target == '.' && sr == startRow && er - sr == 2 * direction) {
+                if (grid[sr + direction][sc] == '.') break;
+            }
+        
+            if (colDiff == 1 && er - sr == direction && target != '.') break;
+
+            return false;
+        }
+        case 'n':
+            if (!((rowDiff == 2 && colDiff == 1) || (rowDiff == 1 && colDiff == 2))) return false;
+            break;
+        case 'r':
+            if (sr != er && sc != ec) return false;
+            if (!isPathClear(sr, sc, er, ec)) return false;
+            break;
+        case 'b':
+            if (rowDiff != colDiff) return false;
+            if (!isPathClear(sr, sc, er, ec)) return false;
+            break;
+        case 'q':
+            if (!((sr == er || sc == ec) || (rowDiff == colDiff))) return false;
+            if (!isPathClear(sr, sc, er, ec)) return false;
+            break;
+        case 'k':
+            if (rowDiff > 1 || colDiff > 1) return false;
+            break;
+    }
 
     grid[er][ec] = grid[sr][sc];
     grid[sr][sc] = '.';

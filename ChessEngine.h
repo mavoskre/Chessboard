@@ -15,6 +15,9 @@ public:
     ChessBoard();
     bool move(std::string m);
     void render(std::string filename);
+
+private:
+    bool isPathClear(int sr, int sc, int er, int ec);
 };
 
 #endif
